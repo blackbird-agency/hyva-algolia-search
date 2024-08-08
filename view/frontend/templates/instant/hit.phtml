@@ -1,0 +1,146 @@
+<?php
+/** @var \Algolia\AlgoliaSearch\Block\Instant\Hit $block */
+use Hyva\Theme\Model\ViewModelRegistry;
+
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\HeroiconsSolid;
+use Hyva\Theme\ViewModel\BlockJsDependencies;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroiconsOutline */
+$heroiconsOutline = $viewModels->require(HeroiconsOutline::class);
+/** @var HeroiconsSolid $heroiconsSolid */
+$heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
+
+$priceKey = $block->getPriceKey();
+$currencyCode = $block->getCurrencyCode();
+
+$baseVar = $escaper->escapeHtml('price' . $priceKey);
+$maxVar = $escaper->escapeHtml('price' . $priceKey . '_max');
+$baseFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_formated');
+$origFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_original_formated');
+$tierFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_tier_formated');
+
+$pageJsRegistry = $viewModels->require(BlockJsDependencies::class);
+$pageJsRegistry->setBlockNameDependency($block, 'search.result.list.js.wishlist');
+$pageJsRegistry->setBlockNameDependency($block, 'search.result.list.js.compare');
+?>
+<script type="text/template" id="instant-hit-template">
+    <div class="flex flex-col w-full h-full bg-white shadow" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
+        x-data="initInsight()"
+        x-init="bindClickEvent($el, 'Product Clicked', '{{objectID}}', '{{__indexName}}', '{{__position}}', '{{__queryID}}')"
+    >
+        <meta itemprop="position" content="{{__position}}"/>
+        <div class="flex-grow" itemprop="item" itemscope itemtype="http://schema.org/Product">
+            <meta itemprop="url"
+                  {{^__queryID}} content="{{url}}" {{/__queryID}}
+            {{#__queryID}} content="{{urlForInsights}}" {{/__queryID}}
+            />
+            <a class="h-full result"
+               {{^__queryID}} href="{{url}}" {{/__queryID}}
+            {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}>
+            <div class="h-full flex flex-col p-4 hover:bg-gray-100">
+                <div class="flex justify-center items-center mb-3 bg-white">
+                    {{#image_url}}<img itemprop="image" src="{{{image_url}}}" alt="{{{name}}}"/>{{/image_url}}
+                    {{^image_url}}<span class="no-image"></span>{{/image_url}}
+                </div>
+                <div class="flex flex-col items-stretch	flex-grow">
+                    <h3 itemprop="name" class="mt-2 mb-1 items-center justify-center text-primary font-semibold text-lg text-center">
+                        {{{ _highlightResult.name.value }}}
+                    </h3>
+                    <div>
+                        <div>
+                            <div>
+                                <div class="hidden">
+                                    <span><span><?php echo __('Rating') ?>:</span></span>
+                                    <div title="{{rating_summary}}%">
+                                            <span style="width:{{rating_summary}}%">
+                                                <span>{{rating_summary}}%</span>
+                                            </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {{^<?php echo $maxVar; ?>}}
+                            <div itemprop="offers" itemscope itemtype="http://schema.org/Offer" class="price">
+                                <meta itemprop="price" content="{{<?php echo $baseVar; ?>}}"/>
+                                {{/<?php echo $maxVar; ?>}}
+                                {{#<?php echo $maxVar; ?>}}
+                                <div itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer" class="price">
+                                    <meta itemprop="lowPrice" content="{{<?php echo $baseVar; ?>}}"/>
+                                    <meta itemprop="highPrice" content="{{<?php echo $maxVar; ?>}}"/>
+                                    {{/<?php echo $maxVar; ?>}}
+                                    <meta itemprop="priceCurrency" content="<?php echo $currencyCode; ?>"/>
+                                    <div>
+                                        <div class="flex flex-col">
+                                            <span class="text-lg font-semibold tracking-wider leading-7">
+                                                {{<?php echo $baseFormatedVar; ?>}}
+                                            </span>
+                                            {{#<?php echo $origFormatedVar; ?>}}
+                                            <div>
+                                                <span class="text-sm font-normal leading-6 text-gray-500"><?= $escaper->escapeHtmlAttr(__('Regular Price')) ?></span>
+                                                <span class="pl-1 text-base font-normal leading-6 text-gray-500"> {{<?php echo $origFormatedVar; ?>}}</span>
+                                            </div>
+                                            {{/<?php echo $origFormatedVar; ?>}}
+                                            {{#<?php echo $tierFormatedVar; ?>}}
+                                            <span>
+                                                    <?php echo __('As low as') ?>
+                                                    <span>{{<?php echo $tierFormatedVar; ?>}}</span>
+                                                </span>
+                                            {{/<?php echo $tierFormatedVar; ?>}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>{{{ _highlightResult.description.value }}}</div>
+                        {{#isAddToCartEnabled}}
+                        <div class="mt-auto pt-3 flex flex-wrap justify-center items-center">
+                            <form class="flex-grow" data-role="tocart-form" action="{{ addToCart.action }}" method="post">
+                                <input type="hidden" name="product" value="{{objectID}}">
+                                <input type="hidden" name="uenc" value="{{ addToCart.uenc }}">
+                                <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
+                                <button
+                                    type="submit" title="<?php echo __('Add to Cart') ?>"
+                                    class="w-auto btn btn-primary justify-center text-sm mr-auto"
+                                >
+                                    <?= $heroiconsOutline->shoppingCartHtml("h-6 w-6 border-current inline", 25, 25) ?>
+                                    <span class="ml-2 inline md:ml-0 md:hidden lg:ml-2 lg:inline"><?php echo __('Add to Cart') ?></span>
+                                </button>
+                            </form>
+                            <button
+                                x-data="initWishlist()"
+                                @click.prevent="addToWishlist({{objectID}})"
+                                class="rounded-full w-9 h-9 bg-gray-200 p-0 border-0 inline-flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-red-600 ml-2"
+                            >
+                                <?= $heroiconsSolid->heartHtml("w-5 h-5", 25, 25) ?>
+                            </button>
+                            <button
+                                x-data="initCompareOnProductList()"
+                                @click.prevent="addToCompare({{objectID}})"
+                                class="rounded-full w-9 h-9 bg-gray-200 p-0 border-0 inline-flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-yellow-500 ml-2"
+                            >
+                                <?= $heroiconsOutline->scaleHtml("w-5 h-5", 25, 25) ?>
+                            </button>
+                        </div>
+                        {{/isAddToCartEnabled}}
+                    </div>
+                </div>
+                </a>
+            </div>
+        </div>
+</script>
+<script>
+    'use strict';
+
+    function initInsight() {
+        return {
+            bindClickEvent(element, eventName, objectID, indexName, position, queryID) {
+                element.querySelector(algoliaConfig.ccAnalytics.ISSelector).addEventListener("click", function () {
+                    buildInsightsEventData(eventName, objectID, indexName, position, queryID);
+                });
+            }
+        }
+    }
+</script>

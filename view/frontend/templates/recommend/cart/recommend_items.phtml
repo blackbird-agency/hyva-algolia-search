@@ -1,0 +1,32 @@
+<?php
+
+use Algolia\AlgoliaSearch\ViewModel\Recommend\Cart;
+
+/**
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+$viewModel = $viewModels->require(Cart::class);
+
+$recommendConfig = $viewModel->getAlgoliaRecommendConfiguration();
+if (isset($recommendConfig['enabledRelatedInCart']) || isset($recommendConfig['enabledFBTInCart']) || isset($recommendConfig['isTrendItemsEnabledInCartPage'])):
+    ?>
+    <div x-data="initRecommendInsight()">
+        <div id="frequentlyBoughtTogether" class="recommend-component"></div>
+        <div id="relatedProducts" class="recommend-component"></div>
+        <div id="trendItems" class="recommend-component"></div>
+    </div>
+
+    <script>
+        'use strict';
+
+        function initRecommendInsight() {
+            return {
+                bindClickEvent(element, eventName, objectID, indexName) {
+                    element.querySelector(algoliaConfig.personalization.clickedEvents.productRecommended.selector).addEventListener("click", function () {
+                        buildInsightsEventData(eventName, objectID, indexName);
+                    });
+                }
+            }
+        }
+    </script>
+<?php endif; ?>

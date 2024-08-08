@@ -1,0 +1,37 @@
+<?php
+use Algolia\AlgoliaSearch\ViewModel\Recommend\ProductView;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/**
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+$viewModel = $viewModels->require(ProductView::class);
+
+/** @var HeroiconsOutline $heroiconsOutline */
+$heroiconsOutline = $viewModels->require(HeroiconsOutline::class);
+
+$recommendConfig =  $viewModel->getAlgoliaRecommendConfiguration();
+
+if (isset($recommendConfig['enabledFBT']) || isset($recommendConfig['enabledRelated']) || isset($recommendConfig['enabledRelated'])):
+    $product = $viewModel->getProduct(); ?>
+    <div x-data="initRecommendInsight()">
+        <div id="frequentlyBoughtTogether" class="recommend-component"></div>
+        <div id="relatedProducts" class="recommend-component"></div>
+        <div id="trendItems" class="recommend-component"></div>
+    </div>
+
+    <script>
+        'use strict';
+
+        function initRecommendInsight() {
+            return {
+                bindClickEvent(element, eventName, objectID, indexName) {
+                    element.querySelector(algoliaConfig.personalization.clickedEvents.productRecommended.selector).addEventListener("click", function () {
+                        buildInsightsEventData(eventName, objectID, indexName);
+                    });
+                }
+            }
+        }
+    </script>
+
+<?php endif; ?>

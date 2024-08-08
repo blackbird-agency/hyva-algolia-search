@@ -1,0 +1,25 @@
+<?php
+/*** @var \Algolia\AlgoliaSearch\Block\Algolia $blockInstance */
+
+$blockInstance= $block->getLayout()->createBlock('Algolia\AlgoliaSearch\Block\Algolia');
+$config = $blockInstance->getConfigHelper();
+$catalogSearchHelper = $blockInstance->getCatalogSearchHelper();
+
+// Render form with autocomplete input
+if ($config->isAutoCompleteEnabled()) : ?>
+    <div id="algoliaAutocomplete" class="block block-search algolia-search-block algolia-search-input container py-2 mx-auto text-black" ></div>
+    <div id="panelContainer" class="relative" x-data="initAutocompleteInsight"></div>
+    <script>
+        'use strict';
+
+        function initAutocompleteInsight() {
+            return {
+                bindClickEvent(element, eventName, objectID, indexName, position, queryId) {
+                    element.querySelector('.algoliasearch-autocomplete-hit')?.addEventListener("click", function () {
+                        buildInsightsEventData(eventName, objectID, indexName, position, queryId);
+                    });
+                }
+            }
+        }
+    </script>
+<?php endif;?>

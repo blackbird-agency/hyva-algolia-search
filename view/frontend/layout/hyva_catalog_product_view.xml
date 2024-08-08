@@ -1,0 +1,11 @@
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content.aside">
+            <block name="algolia.product.view" template="Blackbird_HyvaAlgoliaSearch::recommend/products.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="product.info.form">
+            <block name="algolia.product.addtocart.queryId" class="Magento\Framework\View\Element\Template" template="Blackbird_HyvaAlgoliaSearch::product/view/addtocart.phtml" after="-"/>
+        </referenceBlock>
+    </body>
+</page>

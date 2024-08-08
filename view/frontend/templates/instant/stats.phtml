@@ -1,0 +1,18 @@
+<script type="text/template" id="instant-stats-template">
+    <div class="py-2">
+        {{#hasOneResult}}<strong>1</strong>
+        <span class="text-sm leading-5 text-gray-700 tracking-wider">
+        <?php echo $block->escapeHtml(__('Item')); ?>
+        </span>
+        {{/hasOneResult}}
+        {{#hasManyResults}}
+        <span class="text-sm leading-5 text-gray-700 tracking-wider">
+            <?php echo $block->escapeHtml(__('Items')); ?>
+        </span>
+        <span class="text-sm leading-5 text-gray-700 tracking-wider" itemprop="numberOfItems">
+        {{first}}-{{last}} <?php echo $block->escapeHtml(__('of')); ?>
+        </span>
+        <span class="text-sm leading-5 text-gray-700 tracking-wider" itemprop="numberOfItems">{{nbHits}}</span>
+        {{/hasManyResults}}
+    </div>
+</script>

@@ -1,0 +1,209 @@
+<script>
+    function initAlgoliaInsights(partial) {
+        window.algoliaAnalytics = AlgoliaAnalytics.default;
+        window.hasAddedParameters = false;
+        window.useCookie = algoliaConfig.cookieConfiguration.cookieRestrictionModeEnabled ? !!hyva.getCookie(algoliaConfig.cookieConfiguration.consentCookieName) : true;
+
+        if (!canTrack()) {
+            return;
+        }
+
+        initializeAnalytics(partial);
+        addSearchParameters();
+        bindEvents();
+
+        // Although events can accept both auth and anon tokens, queries can only accept a single token
+        function determineUserToken() {
+            return window.algoliaAnalytics.getAuthenticatedUserToken() ?? algoliaAnalytics.getUserToken();
+        }
+
+        function initializeAnalytics(partial = false) {
+            if (partial) {
+                algoliaAnalytics.init({
+                    appId: algoliaConfig.applicationId,
+                    apiKey: algoliaConfig.apiKey,
+                    partial: true,
+                    useCookie: true,
+                    cookieDuration: Number(algoliaConfig.cookieConfiguration.cookieDuration)
+                });
+            } else {
+                algoliaAnalytics.init({
+                    appId: algoliaConfig.applicationId,
+                    apiKey: algoliaConfig.apiKey,
+                    useCookie: true,
+                    cookieDuration: Number(algoliaConfig.cookieConfiguration.cookieDuration)
+                });
+            }
+            let userAgent = 'insights-js-in-magento (' + algoliaConfig.extensionVersion + ')';
+            window.algoliaAnalytics.addAlgoliaAgent(userAgent);
+
+            let unsetAuthenticationToken = hyva.getCookie('unset_authentication_token');
+            if (hyva.getCookie('aa-search') && hyva.getCookie('aa-search') !== '') {
+                window.algoliaAnalytics.setUserToken(hyva.getCookie('aa-search'));
+            } else if (hyva.getCookie('_ALGOLIA') && hyva.getCookie('_ALGOLIA') !== '') {
+                window.algoliaAnalytics.setUserToken(hyva.getCookie('_ALGOLIA'));
+            } else if (unsetAuthenticationToken && unsetAuthenticationToken !== '') {
+                window.algoliaAnalytics.setUserToken('undefined');
+                hyva.setCookie('unset_authentication_token', '', -1);
+            }
+        }
+
+        function applyInsightsToSearchParams(params = {}) {
+            if (algoliaConfig.ccAnalytics.enabled) {
+                params.clickAnalytics = true;
+            }
+
+            if (algoliaConfig.personalization.enabled) {
+                params.enablePersonalization = true;
+                params.userToken = determineUserToken();
+            }
+
+            return params;
+        }
+
+        function addSearchParameters() {
+            if (window.hasAddedParameters) {
+                return;
+            }
+            algolia.registerHook('beforeWidgetInitialization', function (allWidgetConfiguration) {
+                allWidgetConfiguration.configure = applyInsightsToSearchParams(
+                    allWidgetConfiguration.configure
+                );
+                return allWidgetConfiguration;
+            });
+
+            algolia.registerHook('afterAutocompleteProductSourceOptions', (options) => {
+                return applyInsightsToSearchParams(options);
+            });
+
+            window.hasAddedParameters = true;
+        }
+
+
+        function bindEvents() {
+            bindClickedEvents();
+            bindViewedEvents();
+
+            algolia.triggerHooks('afterInsightsBindEvents', this);
+        }
+
+        function bindClickedEvents() {
+            // Filter Clicked
+            if (algoliaConfig.personalization.filterClicked.enabled) {
+                const facets = algoliaConfig.facets;
+                let containers = [];
+                for (let i = 0; i < facets.length; i++) {
+                    let elem = createISWidgetContainer(facets[i].attribute);
+                    containers.push('.' + elem.className);
+                }
+
+                algolia.registerHook('afterInstantsearchStart', function (search) {
+                    const selectors = document.querySelectorAll(containers.join(', '));
+                    selectors.forEach(function (e) {
+                        e.addEventListener('click', function (event) {
+                            const attribute = this.dataset.attr;
+                            const elem = event.target;
+                            if (elem.type === "checkbox" && elem.checked) {
+                                var filter = attribute + ':' + elem.value;
+                                trackFilterClick([filter]);
+                            }
+                        });
+                    });
+
+                    return search;
+                });
+            }
+        }
+
+        function bindViewedEvents() {
+            // viewed event is exclusive to personalization
+            if (!algoliaConfig.personalization.enabled) {
+                return;
+            }
+
+            const viewConfig = algoliaConfig.personalization.viewedEvents.viewProduct;
+            if (viewConfig.enabled) {
+                if (document.body.classList.contains('catalog-product-view')) {
+                    const objectId = document.querySelector('#product_addtocart_form')?.querySelector('input[name="product"]').value;
+                    if (objectId) {
+                        const viewData = buildEventData(viewConfig.eventName, objectId, algoliaConfig.indexName + '_products');
+                        trackView(viewData);
+                    }
+                }
+
+            }
+        }
+
+        function buildEventData(eventName, objectId, indexName, position = null, queryId = null) {
+            const eventData = {
+                eventName: eventName,
+                objectIDs: [objectId + ''],
+                index: indexName
+            };
+
+            if (position) {
+                eventData.positions = [parseInt(position)];
+            }
+
+            if (queryId) {
+                eventData.queryID = queryId;
+            }
+
+            return eventData;
+        }
+
+        function trackClick(eventData) {
+            if (eventData.queryID) {
+                window.algoliaAnalytics.clickedObjectIDsAfterSearch(eventData);
+            } else {
+                window.algoliaAnalytics.clickedObjectIDs(eventData);
+            }
+        }
+
+        function trackFilterClick(filters) {
+            const eventData = {
+                index: algoliaConfig.indexName + '_products',
+                eventName: algoliaConfig.personalization.filterClicked.eventName,
+                filters: filters
+            };
+
+            window.algoliaAnalytics.clickedFilters(eventData);
+        }
+
+        function trackView(eventData) {
+            window.algoliaAnalytics.viewedObjectIDs(eventData);
+        }
+    }
+
+    function canTrack() {
+        return ((algoliaConfig.ccAnalytics.enabled
+            || algoliaConfig.personalization.enabled) && window.useCookie);
+    }
+
+    function buildInsightsEventData(eventName, objectId, indexName, position = null, queryId = null) {
+        if (!canTrack()) {
+            return;
+        }
+
+        const eventData = {
+            eventName: eventName,
+            objectIDs: [objectId + ''],
+            index: indexName
+        };
+        if (position) {
+            eventData.positions = [parseInt(position)];
+        }
+        if (queryId) {
+            eventData.queryID = queryId;
+        }
+        trackClick(eventData);
+    }
+
+    function trackClick(eventData) {
+        if (eventData.queryID) {
+            window.algoliaAnalytics.clickedObjectIDsAfterSearch(eventData);
+        } else {
+            window.algoliaAnalytics.clickedObjectIDs(eventData);
+        }
+    }
+</script>

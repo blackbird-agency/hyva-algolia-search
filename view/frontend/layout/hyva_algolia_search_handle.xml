@@ -1,0 +1,47 @@
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <!--
+    /**
+     * Copyright © Magento, Inc. All rights reserved.
+     * See COPYING.txt for license details.
+     */
+    -->
+    <head>
+        <remove src="Algolia_AlgoliaSearch::internals/grid.css"/>
+        <remove src="Algolia_AlgoliaSearch::internals/autocomplete.css"/>
+        <remove src="Algolia_AlgoliaSearch::internals/algolia-reset.css"/>
+        <remove src="Algolia_AlgoliaSearch::internals/instantsearch.v3.css"/>
+        <remove src="Algolia_AlgoliaSearch::internals/recommend.css"/>
+    </head>
+    <body>
+        <referenceBlock name="algolia.internals.configuration" remove="true"/>
+        <!--        <referenceBlock name="algolia.beforecontent" remove="true"/>-->
+        <referenceBlock name="header-search">
+            <action method="setTemplate" ifconfig="algoliasearch_autocomplete/autocomplete/is_popup_enabled">
+                <argument name="setTemplate" xsi:type="string">Blackbird_HyvaAlgoliaSearch::html/header/search-form.phtml</argument>
+            </action>
+        </referenceBlock>
+
+        <referenceBlock name="before.body.end">
+            <block name="algolia-search"
+                   as="header-search"
+                   template="Blackbird_HyvaAlgoliaSearch::algolia-include.phtml"
+                   class="Algolia\AlgoliaSearch\Block\Algolia">
+                <block name="algolia-insights"
+                       as="insights-js"
+                       template="Blackbird_HyvaAlgoliaSearch::algolia-insights-include.phtml"
+                       class="Algolia\AlgoliaSearch\Block\Algolia">
+                </block>
+            </block>
+            <block class="Algolia\AlgoliaSearch\Block\Instant\Wrapper" name="algolia.instant.wrapper"
+                   template="Blackbird_HyvaAlgoliaSearch::instant/wrapper.phtml"/>
+            <block class="Algolia\AlgoliaSearch\Block\Instant\Hit" name="algolia.instant.hit"
+                   template="Blackbird_HyvaAlgoliaSearch::instant/hit.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.facet"
+                   template="Blackbird_HyvaAlgoliaSearch::instant/facet.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.stats"
+                   template="Blackbird_HyvaAlgoliaSearch::instant/stats.phtml"/>
+            <block name="search.result.list.js.compare" template="Magento_Catalog::product/list/js/compare.phtml"/>
+            <block name="search.result.list.js.wishlist" template="Magento_Catalog::product/list/js/wishlist.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

@@ -1,0 +1,36 @@
+{
+    "name": "blackbird/module-hyva-algolia-search",
+    "version": "100.0.0",
+    "description": "Blackbird_HyvaAlgoliaSearch makes Algolia_AlgoliaSearch compatible with Hyvä Themes",
+    "type": "magento2-module",
+    "require": {
+        "php": "~8.0.0||~8.1.0||~8.2.0||~8.3.0",
+        "magento/framework": "*",
+        "algolia/algoliasearch-magento-2": "^3.12",
+        "blackbird/external-resources-loader": "^1.0",
+        "hyva-themes/magento2-default-theme": "*"
+    },
+    "authors": [
+        {
+            "name": "Emilie Wittmann - Blackbird",
+            "email": "emilie@bird.eu",
+            "homepage": "https://black.bird.eu/",
+            "role": "Tech Lead"
+        },
+        {
+            "name": "Klauss Mortreux - Blackbird",
+            "email": "klauss@bird.eu",
+            "homepage": "https://black.bird.eu/",
+            "role": "Tech Lead Frontend"
+        }
+    ],
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Blackbird\\HyvaAlgoliaSearch\\": ""
+        }
+    }
+}

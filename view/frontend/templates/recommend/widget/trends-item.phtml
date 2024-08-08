@@ -1,0 +1,37 @@
+<?php
+
+use Blackbird\HyvaAlgoliaSearch\ViewModel\InstantSearchViewModel;
+
+/**
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ */
+/** @var \Algolia\AlgoliaSearch\Block\Widget\TrendsItem $block */
+$isEnabled = $block->isTrendingItemEnabled();
+$uniqueToken = $block->generateUniqueToken();
+
+/** @var InstantSearchViewModel $viewModel */
+$viewModel = $viewModels->require(InstantSearchViewModel::class);
+
+if ($isEnabled):
+    $trendConstainer = 'trendItems' . $uniqueToken; ?>
+    <div id="<?= $trendConstainer ?>" class="trendsItem recommend-component"></div>
+    <script>
+        function initRecommendTrends<?= $uniqueToken ?>() {
+            Promise.all([
+                <?php foreach($viewModel->getRecommendedTrendsScripts() as $script) :?>
+                blackbird.loadExternalResource("<?= $script ?>"),
+                <?php endforeach; ?>]
+            ).then(data => {
+                window.addEventListener('init-algolia-trends-done', function () {
+                    initAlgoliaRecommendedTrends("<?= $trendConstainer ?>", "<?= $block->getData('numOfTrendsItem') ?>", "<?= $block->getData('facetName') ?>", "<?= $block->getData('facetValue') ?>");
+                });
+
+                window.dispatchEvent(new CustomEvent('init-algolia-trends'));
+            });
+        }
+        window.addEventListener('DOMContentLoaded', function (){
+            initRecommendTrends<?= $uniqueToken ?>();
+        });
+
+    </script>
+<?php endif; ?>

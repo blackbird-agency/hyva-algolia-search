@@ -1,0 +1,7 @@
+<script type="text/template" id="refinements-lists-item-template">
+    <label class="{{cssClasses.label}} {{#isRefined}}checked{{/isRefined}} flex items-center mb-2.5">
+        <input class="{{cssClasses.checkbox}}" {{#isRefined}}checked{{/isRefined}} type="checkbox" value="{{value}}" />
+        <span class="pl-2">{{value}}</span>
+        <span class="{{cssClasses.count}} flex-grow text-right">{{count}}</span>
+    </label>
+</script>
