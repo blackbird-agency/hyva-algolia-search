@@ -1,0 +1,45 @@
+@layer components {
+    .aa-Autocomplete {
+        .aa-Input {
+            @apply w-full p-2 text-lg leading-normal transition appearance-none focus:outline-none focus:border-transparent;
+        }
+
+        .aa-SubmitButton, .aa-ClearButton {
+            @apply hidden;
+        }
+    }
+
+    .aa-Panel {
+        @apply absolute z-50 bg-container-lighter !top-0;
+    }
+
+    .aa-PanelLayout {
+        @apply shadow p-8;
+    }
+
+    .aa-Source {
+        @apply mb-4;
+        &:has(.aa-SourceNoResults) {
+            @apply hidden;
+        }
+    }
+
+    .aa-SourceHeader {
+        @apply font-bold pb-4;
+    }
+
+    .aa-SourceFooter {
+        @apply mt-4;
+        span {
+            @apply font-bold;
+        }
+    }
+
+    .aa-List {
+        @apply gap-4;
+    }
+
+    .aa-Item {
+        @apply flex flex-col w-full h-full bg-white shadow hover:bg-gray-100 px-2 py-4;
+    }
+}

@@ -1,0 +1,186 @@
+@layer components {
+    .search.results{
+        @apply hidden;
+    }
+
+    .highlight * {
+        @apply font-bold;
+    }
+
+    .ais-SearchBox-form {
+        @apply w-full relative flex items-center
+    }
+
+    .ais-SearchBox-input {
+        @apply w-full pl-2 border text-sm tracking-wider border-gray-400;
+    }
+
+    button.ais-SearchBox-reset {
+        @apply absolute right-0 pr-3 cursor-pointer;
+    }
+
+    input.ais-SearchBox-input::-webkit-search-decoration,
+    input.ais-SearchBox-input::-webkit-search-cancel-button,
+    input.ais-SearchBox-input::-webkit-search-results-button,
+    input.ais-SearchBox-input::-webkit-search-results-decoration {
+        @apply hidden;
+    }
+
+    .ais-SearchBox-submit {
+        @apply hidden;
+    }
+    .ais-InfiniteHits-loadMore, .ais-InfiniteHits-loadPrevious {
+        @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full block m-auto;
+    }
+
+    .ais-InfiniteHits-loadMore--disabled, .ais-InfiniteHits-loadPrevious--disabled {
+        @apply hidden;
+    }
+
+    .ais-Pagination {
+        @apply flex justify-center;
+    }
+
+    .ais-Pagination-list {
+        @apply inline-flex shadow-sm bg-white;
+    }
+
+    .ais-Pagination-list li.ais-Pagination-item a {
+        @apply cursor-pointer;
+    }
+
+    .ais-Pagination-list li.ais-Pagination-item--selected a {
+        @apply cursor-default;
+    }
+
+    .ais-Pagination-item {
+        @apply inline-flex items-center -ml-px text-sm font-medium leading-5 text-gray-700
+        transition duration-150 ease-in-out bg-white border border-gray-300 hover:text-gray-500;
+    }
+
+    .ais-Pagination-item--previousPage {
+        @apply relative rounded-l-md;
+    }
+
+    .ais-Pagination-item--nextPage {
+        @apply relative rounded-r-md;
+    }
+
+    .ais-Pagination-item--previousPage::after {
+        content: '\003C';
+        @apply px-3 py-2;
+    }
+
+    .ais-Pagination-item--nextPage::after {
+        content: '\003E';
+        @apply px-3 py-2;
+    }
+
+    .ais-Pagination-list .ais-Pagination-item--nextPage a {
+        @apply absolute left-0 top-0 p-0 text-transparent;
+    }
+
+    .ais-Pagination-list .ais-Pagination-item--previousPage a {
+        @apply absolute left-0 top-0 p-0 text-transparent;
+    }
+
+    .ais-Pagination-list .ais-Pagination-item--nextPage span {
+        @apply absolute left-0 top-0 p-0 text-transparent;
+    }
+
+    .ais-Pagination-list .ais-Pagination-item--previousPage span {
+        @apply absolute left-0 top-0 p-0 text-transparent;
+    }
+
+    .ais-Pagination-item--selected {
+        @apply bg-gray-200;
+    }
+
+    l.ais-Pagination-item--selected a {
+        @apply text-gray-700 font-bold border border-blue-700 cursor-default;
+    }
+
+    .ais-Pagination-item .ais-Pagination-link {
+        @apply px-4 py-2;
+    }
+
+    .ais-ClearRefinements-button {
+        @apply text-xs tracking-normal;
+    }
+
+    .ais-ClearRefinements-button--disabled {
+        @apply hidden
+    }
+
+    .ais-RangeSlider {
+        @apply mt-6 ml-2 mr-5 pt-4 px-2;
+    }
+
+    .rheostat-background {
+        @apply h-1.5 bg-gray-200;
+    }
+
+    .rheostat-handle {
+        @apply absolute left-0 -top-2 w-5 h-5 z-10 bg-white rounded-full border border-black cursor-pointer;
+    }
+
+    .rheostat-handle .rheostat-tooltip {
+        @apply absolute -left-2/3 -top-6 leading-5 ;
+    }
+
+    .rheostat-progress {
+        @apply absolute left-0 top-0 h-1.5 bg-blue-500;
+    }
+
+    .ais-CurrentRefinements-list {
+        @apply flex flex-col py-2;
+    }
+
+    .ais-CurrentRefinements-list li {
+        @apply pb-1;
+    }
+
+    .ais-CurrentRefinements-item .ais-CurrentRefinements-label {
+        @apply text-base tracking-normal;
+    }
+
+    .ais-CurrentRefinements-item .ais-CurrentRefinements-category {
+        @apply flex justify-between;
+    }
+
+    .ais-CurrentRefinements-category {
+        @apply pb-1;
+    }
+
+    .ais-CurrentRefinements-category span {
+        @apply text-sm tracking-normal;
+    }
+
+    .ais-Panel {
+        @apply my-3 p-4 text-base leading-5 bg-white shadow;
+    }
+
+    .ais-Panel-header span .name {
+        @apply pb-4 text-base md:text-lg font-semibold border-b;
+    }
+
+    .ais-HierarchicalMenu {
+        @apply pt-4;
+    }
+
+    .ais-HierarchicalMenu-link {
+        @apply flex py-1;
+    }
+
+    .ais-HierarchicalMenu-count {
+        @apply flex-grow text-right;
+    }
+
+    .ais-RefinementList-searchBox .ais-SearchBox .ais-SearchBox-form {
+        @apply my-3 border;
+    }
+
+    .ais-SortBy .ais-SortBy-select {
+        @apply text-black text-base rounded-lg border-gray-400;
+    }
+}
