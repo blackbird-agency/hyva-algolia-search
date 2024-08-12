@@ -30,7 +30,7 @@
           "src/registration.php"
         ],
         "psr-4": {
-            "Blackbird\\HyvaAlgoliaSearch\\": ""
+            "Blackbird\\HyvaAlgoliaSearch\\": "src/"
         }
     }
 }
