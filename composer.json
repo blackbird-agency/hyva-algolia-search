@@ -27,7 +27,7 @@
     "license": "MIT",
     "autoload": {
         "files": [
-            "registration.php"
+          "src/registration.php"
         ],
         "psr-4": {
             "Blackbird\\HyvaAlgoliaSearch\\": ""
