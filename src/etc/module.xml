@@ -3,6 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
     <module name="Blackbird_HyvaAlgoliaSearch">
         <sequence>
+            <module name="Hyva_CompatModuleFallback"/>
             <module name="Algolia_AlgoliaSearch"/>
         </sequence>
     </module>

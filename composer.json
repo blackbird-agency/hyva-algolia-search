@@ -8,6 +8,7 @@
         "magento/framework": "*",
         "algolia/algoliasearch-magento-2": "^3.12",
         "blackbird/external-resources-loader": "^1.0",
+	"hyva-themes/magento2-compat-module-fallback": "*",
         "hyva-themes/magento2-default-theme": "*"
     },
     "authors": [
