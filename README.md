@@ -1,4 +1,8 @@
 # hyva-algolia-search
+
+[![Latest Stable Version](https://img.shields.io/badge/version-2.0.1-blue)](https://packagist.org/packages/blackbird/module-hyva-algolia-search)
+[![License: MIT](https://img.shields.io/github/license/blackbird-agency/hyva-splide-js.svg)](./LICENSE)
+
 Compat module for Algolia Search on Magento 2 using Hyvä Themes. This requires:
 - A [Hyvä Themes](https://www.hyva.io/) key
 - Access to Algolia
