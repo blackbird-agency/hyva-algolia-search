@@ -28,12 +28,7 @@ php bin/magento setup:upgrade
 
 **If you are in production mode, do not forget to recompile and redeploy the static resources, or use the `--keep-generated` option.**
 
-Once the module is installed, please run the following command to generate the updated `app/etc/hyva-themes.json` file as per [official documentation](https://docs.hyva.io/hyva-themes/compatibility-modules/tailwind-source-css-merging.html#1-create-the-tailwind-sourcecss-file):
-
-```
-bin/magento hyva:config:generate
-```
-
+Once the module is installed, please check the `app/etc/hyva-themes.json` file.   
 Depending on how the module has been installed, the following line must be now present in the `app/etc/hyva-themes.json` file.
 
 ### Installed using composer
@@ -43,7 +38,7 @@ Depending on how the module has been installed, the following line must be now p
   "extensions": [
     ...
     {
-      "src": "vendor\/blackbird\/module-hyva-algolia-search"
+      "src": "vendor\/blackbird\/module-hyva-algolia-search\/src"
     },
     ...
   ]
@@ -57,12 +52,19 @@ Depending on how the module has been installed, the following line must be now p
   "extensions": [
     ...
     {
-      "src": "app\/code\/Blackbird\/HyvaAlgoliaSearch"
+      "src": "app\/code\/Blackbird\/HyvaAlgoliaSearch\/src"
     },
     ...
   ]
 }
 ```
+
+If the line is missing (notably for Magento 2.4.7 and late patches of Magento 2.4.6), please run the following command as per [official documentation](https://docs.hyva.io/hyva-themes/compatibility-modules/tailwind-source-css-merging.html#1-create-the-tailwind-sourcecss-file) and check that the new line appears:
+
+```
+bin/magento hyva:config:generate
+```
+
 
 ## What's included
 
@@ -80,3 +82,4 @@ Compare and wishlist feature has been reported.
 
 - As of now, the Ajax add to basket feature has been implemented within a limited scope. Simple products have the quick ATB option but configurable products are **forwarded to the product page**.
 - The native Hyvä Themes implementation of the option selection on a product tile **has not** been integrated yet.
+- Filters styling on a listing page are quite raw at the moment. This will be improved in the future
