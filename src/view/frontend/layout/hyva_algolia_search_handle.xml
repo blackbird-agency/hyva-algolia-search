@@ -11,6 +11,13 @@
         <remove src="Algolia_AlgoliaSearch::internals/algolia-reset.css"/>
         <remove src="Algolia_AlgoliaSearch::internals/instantsearch.v3.css"/>
         <remove src="Algolia_AlgoliaSearch::internals/recommend.css"/>
+
+        <!-- remove Algolia ^3.14 css -->
+        <remove src="Algolia_AlgoliaSearch::css/grid.css"/>
+        <remove src="Algolia_AlgoliaSearch::css/autocomplete.css"/>
+        <remove src="Algolia_AlgoliaSearch::css/algolia-reset.css"/>
+        <remove src="Algolia_AlgoliaSearch::css/instantsearch.v3.css"/>
+        <remove src="Algolia_AlgoliaSearch::css/recommend.css"/>
     </head>
     <body>
         <referenceBlock name="algolia.internals.configuration" remove="true"/>
