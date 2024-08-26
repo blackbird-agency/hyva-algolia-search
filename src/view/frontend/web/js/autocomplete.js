@@ -538,7 +538,7 @@ function initAlgoliaAutocomplete() {
     algoliaAutocompleteInstance = algolia.triggerHooks('afterAutocompleteStart', algoliaAutocompleteInstance);
 
     if (algoliaConfig.autocomplete.isNavigatorEnabled) {
-        document.body.append('<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>');
+        document.body.insertAdjacentHTML('beforeend', "<style>.aa-Item[aria-selected='true']{background-color: #f2f2f2;}</style>");
     }
 
 }
