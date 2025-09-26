@@ -6,6 +6,8 @@ function initAlgoliaAutocomplete() {
 
     const {autocomplete, getAlgoliaResults} = window['@algolia/autocomplete-js'];
     const {createQuerySuggestionsPlugin} = window['@algolia/autocomplete-plugin-query-suggestions'];
+    const {createRecentSearchesPlugin} = window['@algolia/autocomplete-recent-searches-plugin'];
+    const {createRedirectUrlPlugin} = window['@algolia/autocomplete-redirect-url-plugin'];
     const suggestionsHtml = window['@algolia/templates-suggestions'];
     const productsHtml = window['@algolia/templates-products'];
     const categoriesHtml = window['@algolia/templates-categories'];
@@ -20,10 +22,27 @@ function initAlgoliaAutocomplete() {
     // Global state
     const state = {
         hasRendered: false,
-        hasSuggestionSection: false
+        hasSuggestionSection: false,
+        hasRedirect: false
     };
 
-    let suggestionSection = false;
+    const navigator = {
+            navigate({itemUrl}) {
+                window.location.assign(itemUrl);
+            },
+            navigateNewTab({itemUrl}) {
+                const windowReference = window.open(itemUrl, '_blank', 'noopener');
+
+                if (windowReference) {
+                    windowReference.focus();
+                }
+            },
+            navigateNewWindow({itemUrl}) {
+                window.open(itemUrl, '_blank', 'noopener');
+            }
+        },
+
+        suggestionSection = false;
     let algoliaFooter;
 
     function initialize() {
@@ -49,8 +68,6 @@ function initAlgoliaAutocomplete() {
 
         startAutocomplete(options);
 
-        addFooter();
-
         addKeyboardNavigation();
 
     }
@@ -70,6 +87,16 @@ function initAlgoliaAutocomplete() {
         return searchClient;
     }
 
+    function getSearchResultsUrl(query) {
+        return `${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(query)}`;
+    }
+
+    function handleAutocompleteSubmit({state: {query}}) {
+        if (query && !state.hasRedirect) {
+            navigator.navigate({itemUrl: getSearchResultsUrl(query)});
+        }
+    }
+
     function buildAutocompleteOptions(searchClient, sources, plugins) {
         const debounced = debounce((items) => Promise.resolve(items), DEBOUNCE_MS);
 
@@ -80,17 +107,15 @@ function initAlgoliaAutocomplete() {
             container: algoliaConfig.autocomplete.selector,
             panelContainer: '#panelContainer',
             placeholder: algoliaConfig.translations.placeholder,
-            debug: algoliaConfig.autocomplete.isDebugEnabled,
             detachedMediaQuery: 'none',
-            onSubmit: ({state: {query}}) => {
-                if (query) {
-                    window.location.href =
-                        algoliaConfig.resultPageUrl +
-                        `?q=${encodeURIComponent(query)}`;
-                }
+            onSubmit: (params) => {
+                handleAutocompleteSubmit(params);
             },
             onStateChange: ({state}) => {
                 handleAutocompleteStateChange(state);
+            },
+            render: (params, root) => {
+                renderAutocomplete(params, root);
             },
             getSources: ({query}) => {
                 return filterMinChars(query, debounced(transformSources(searchClient, sources)));
@@ -100,12 +125,44 @@ function initAlgoliaAutocomplete() {
             },
             // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
             debug: isMobile(),
-            plugins
+            plugins,
+            navigator: navigator
         };
 
         options = algolia.triggerHooks('afterAutocompleteOptions', options);
 
         return options;
+    }
+
+    /**
+     * Handle render callback
+     * Docs: https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-js/autocomplete/#param-render
+     *
+     * @param params
+     * @param root
+     */
+    function renderAutocomplete({sections, render, html}, root) {
+        const classes = [
+            'aa-PanelLayout',
+            'aa-Panel--scrollable'
+        ]
+        if (sections.length > 1) {
+            classes.push('with-grid');
+        }
+
+        if (algoliaConfig.autocomplete.redirects.showHitsWithRedirect) {
+            classes.push('show-hits-with-redirect');
+        }
+
+        if (algoliaConfig.autocomplete.redirects.showSelectableRedirect) {
+            classes.push('show-selectable-redirect');
+        }
+
+        render(
+            html`
+                <div class="${classes.join(' ')}">${sections}</div>`,
+            root
+        );
     }
 
     /**
@@ -283,18 +340,18 @@ function initAlgoliaAutocomplete() {
     function buildAutocompleteSourceProducts(section, source) {
         source.options = buildProductSourceOptions(section, source.options);
         source.templates = {
-                noResults: ({html}) => {
+            noResults: ({html}) => {
                 return productsHtml.getNoResultHtml({html});
             },
-                header: ({items, html}) => {
-                    return productsHtml.getHeaderHtml({items, html});
+            header: ({items, html}) => {
+                return productsHtml.getHeaderHtml({items, html});
             },
-                item: ({item, components, html}) => {
-                    const _data = transformAutocompleteHit(item, algoliaConfig.priceKey);
+            item: ({item, components, html}) => {
+                const _data = transformAutocompleteHit(item, algoliaConfig.priceKey);
                 return productsHtml.getItemHtml({item: _data, components, html});
             },
             footer: ({items, html}) => {
-                const resultDetails = {};
+                const resultDetails = {nbHits: items.length};
                 if (items.length) {
                     const firstItem = items[0];
                     resultDetails.allDepartmentsUrl =
@@ -334,6 +391,9 @@ function initAlgoliaAutocomplete() {
         };
         source.transformResponse = ({results, hits}) => {
             const resDetail = results[0];
+            const redirectUrl = resDetail?.renderingContent?.redirect?.url;
+            state.hasRedirect = !!redirectUrl;
+
             return hits.map((res) => {
                 return res.map((hit, i) => {
                     return {
@@ -405,15 +465,13 @@ function initAlgoliaAutocomplete() {
     }
 
 
-
     /**
      * Build the source to be used for federated section showing CMS page results
      * @param section - object containing data for this section
      * @param source - default values for the source object
      * @returns source object
      */
-    function buildAutocompleteSourcePages(section, source)
-    {
+    function buildAutocompleteSourcePages(section, source) {
         source.templates = {
             noResults: ({html}) => {
                 return pagesHtml.getNoResultHtml({html});
@@ -463,12 +521,18 @@ function initAlgoliaAutocomplete() {
     }
 
     function buildAutocompletePlugins(searchClient) {
-        let plugins = [];
+        const plugins = [];
 
         if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
             state.hasSuggestionSection = true;
             plugins.push(buildSuggestionsPlugin(searchClient));
         }
+
+
+        if (algoliaConfig.autocomplete.redirects.enabled) {
+            plugins.push(buildRedirectPlugin());
+        }
+
         return algolia.triggerHooks(
             'afterAutocompletePlugins',
             plugins,
@@ -654,6 +718,79 @@ function initAlgoliaAutocomplete() {
         }
     }
 
+    /**
+     * Only clickable links can open in a new window - else popup blockers may be triggered
+     * @param event
+     * @returns {boolean}
+     */
+    function canRedirectToNewWindow(event) {
+        return algoliaConfig.autocomplete.redirects.openInNewWindow
+            && !(event instanceof SubmitEvent)
+            && !(event instanceof KeyboardEvent);
+    }
+
+    /**
+     * Controls the render of the selectable redirect Autocomplete menu item
+     * @param html Tagged template function
+     * @param state
+     * @returns {*}
+     */
+    function getRedirectItemTemplate({html, state}) {
+        return html`
+            <div className="aa-ItemWrapper">
+                <div className="aa-ItemContent">
+                    <div className="aa-ItemIcon aa-ItemIcon--noBorder">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M16.041 15.856c-0.034 0.026-0.067 0.055-0.099 0.087s-0.060 0.064-0.087 0.099c-1.258 1.213-2.969 1.958-4.855 1.958-1.933 0-3.682-0.782-4.95-2.050s-2.050-3.017-2.050-4.95 0.782-3.682 2.050-4.95 3.017-2.050 4.95-2.050 3.682 0.782 4.95 2.050 2.050 3.017 2.050 4.95c0 1.886-0.745 3.597-1.959 4.856zM21.707 20.293l-3.675-3.675c1.231-1.54 1.968-3.493 1.968-5.618 0-2.485-1.008-4.736-2.636-6.364s-3.879-2.636-6.364-2.636-4.736 1.008-6.364 2.636-2.636 3.879-2.636 6.364 1.008 4.736 2.636 6.364 3.879 2.636 6.364 2.636c2.125 0 4.078-0.737 5.618-1.968l3.675 3.675c0.391 0.391 1.024 0.391 1.414 0s0.391-1.024 0-1.414z"></path>
+                        </svg>
+                    </div>
+                    <div className="aa-ItemContentBody">
+                        <div className="aa-ItemContentTitle"><a className="aa-ItemLink">${state.query}</a>
+                        </div>
+                    </div>
+                </div>
+                <div className="aa-ItemActions">
+                    <div className="aa-ItemActionButton">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                             strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function buildRedirectPlugin() {
+        const onRedirect = (redirects, {event, navigator, state}) => {
+            const item = redirects.find((r) => r.sourceId === 'products');
+            const itemUrl = item?.urls?.[0];
+            if (!itemUrl) return;
+
+            if (event.metaKey || event.ctrlKey) {
+                navigator.navigateNewTab({itemUrl, item, state});
+            } else if (event.shiftKey || canRedirectToNewWindow(event)) {
+                navigator.navigateNewWindow({itemUrl, item, state});
+            } else {
+                navigator.navigate({itemUrl, item, state});
+            }
+        };
+
+        const params = {
+            onRedirect,
+            templates: {
+                item: ({html, state}) => {
+                    return (algoliaConfig.autocomplete.redirects.showSelectableRedirect)
+                        ? getRedirectItemTemplate({html, state})
+                        : html``;
+                }
+            }
+        };
+
+        return redirectUrlPlugin.createRedirectUrlPlugin(params);
+    }
+
     function buildSuggestionsPlugin(searchClient) {
         return createQuerySuggestionsPlugin(
             {
@@ -710,6 +847,7 @@ function initAlgoliaAutocomplete() {
     /**
      * Autocomplete insight click conversion
      */
+
     /*function trackClicks() {
         // TODO: Switch to insights plugin
         if (algoliaConfig.ccAnalytics.enabled) {
@@ -743,7 +881,6 @@ function initAlgoliaAutocomplete() {
     }*/
 
     function handleAutocompleteStateChange(autocompleteState) {
-        // console.log('The Autocomplete state has changed:', autocompleteState);
         if (!state.hasRendered && autocompleteState.isOpen) {
             addPanelObserver();
             state.hasRendered = true;
@@ -756,8 +893,7 @@ function initAlgoliaAutocomplete() {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach(node => {
                         if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('aa-PanelLayout')) {
-                            addFooter();
-                            handleSuggestionsLayout();
+                            initAutocompletePanel(node);
                             //We only care about the first occurrence
                             observer.disconnect();
                         }
@@ -769,13 +905,23 @@ function initAlgoliaAutocomplete() {
         observer.observe(document.body, {childList: true, subtree: true});
     }
 
-    function addFooter() {
+    // Modify the initial panel render DOM as needed
+    function initAutocompletePanel(node) {
+        addFooter(node);
+        handleSuggestionsLayout();
+    }
+
+    function addFooter(node) {
         if (!algoliaConfig.removeBranding) {
-            const algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
+            const div = document.createElement('div');
+            div.id = 'algoliaFooter';
+            div.classList.add('footer_algolia');
+            div.innerHTML = `<span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a>`;
+            node.appendChild(div);
         }
-        if (algoliaFooter && document.getElementById('algoliaFooter')) {
+       /* if (algoliaFooter && document.getElementById('algoliaFooter')) {
             document.querySelector('.aa-PanelLayout').append(algoliaFooter);
-        }
+        }*/
     }
 
     function handleSuggestionsLayout() {

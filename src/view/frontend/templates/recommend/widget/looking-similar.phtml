@@ -10,11 +10,12 @@ $isEnabled = $block->isLookingSimilarEnabled();
 $uniqueToken = $block->generateUniqueToken();
 
 /** @var InstantSearchViewModel $viewModel */
+/** @var \Magento\Framework\Escaper $escaper */
 $viewModel = $viewModels->require(InstantSearchViewModel::class);
 
 if ($isEnabled):
     $lsContainer =  'lsItems' . $block->generateUniqueToken(); ?>
-    <div id="<?= $lsContainer ?>" class="LSItem recommend-component"></div>
+    <div id="<?= $escaper->escapeHtmlAttr($lsContainer) ?>" class="LSItem recommend-component"></div>
     <script>
         function initRecommendLS<?= $uniqueToken ?>() {
             Promise.all([
@@ -23,7 +24,7 @@ if ($isEnabled):
                 <?php endforeach; ?>]
             ).then(data => {
                 window.addEventListener('init-algolia-LS-done', function () {
-                    initAlgoliaRecommendedLS("<?= $lsContainer ?>", "<?= $block->getData('numOfLookingSimilarItem') ?>", "<?= $block->getProductIds() ?>");
+                    initAlgoliaRecommendedLS("<?= $escaper->escapeJs($lsContainer) ?>", "<?= $escaper->escapeJs($block->getData('numOfLookingSimilarItem')) ?>", "<?= $escaper->escapeJs($block->getProductIds()) ?>");
                 });
 
                 window.dispatchEvent(new CustomEvent('init-algolia-LS'));

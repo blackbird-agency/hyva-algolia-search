@@ -3,6 +3,20 @@ function initAlgoliaInstantSearch() {
         instantResultsWrapper: 'algolia-instant-results-wrapper',
         instant_selector: '#instant-search-bar'
     }
+
+    ///////////////////////////
+    //       Properties      //
+    ///////////////////////////
+
+    let isStarted = false;
+    let minQuerySuggestions = 4;
+    let dynamicWidgets = [];
+    let hasInteracted = false;
+
+    ///////////////////////////
+    //  Main build functions //
+    ///////////////////////////
+
     function initialize() {
         // Initialize template processor first, then build instant search
         initTemplateProcessor().then(() => {
@@ -19,7 +33,22 @@ function initAlgoliaInstantSearch() {
     }
 
     /**
-     * Initialize search results using Algolia's InstantSearch.js library v4
+     * Load and display search results using Algolia's InstantSearch.js library v4
+     *
+     * This is the main entry point for building the Magento InstantSearch experience.
+     *
+     * Rough overview of build process:
+     *
+     * - Initializes dependencies
+     * - Creates the DOM elements where InstantSearch widgets will be inserted on the PLP (aka the "wrapper")
+     * - Creates the InstantSearch object with configured options
+     * - All widgets are preconfigured using the `allWidgetConfiguration` object
+     *      - This object houses all widgets to be displayed in the frontend experience and is important for customization
+     *      - Passed to `beforeWidgetInitialization` hook
+     *      - Implementation is specific to Magento index object data structure
+     * - Loads `allWidgetConfiguration` into InstantSearch
+     * - Starts InstantSearch which adds the widgets to the DOM and performs first search
+     *
      * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
      */
     function buildInstantSearch() {
@@ -29,6 +58,16 @@ function initAlgoliaInstantSearch() {
         invokeLegacyHooks();
 
         setupWrapper();
+
+        const search = instantsearch(instantsearchOptions);
+
+        search.client.addAlgoliaAgent(getAlgoliaAgent());
+
+        /** Prepare sorting indices data */
+        algoliaConfig.sortingIndices.unshift({
+            name: indexName,
+            label: algoliaConfig.translations.relevance,
+        });
 
         const indexName = algoliaConfig.indexName + '_products';
 
@@ -40,16 +79,6 @@ function initAlgoliaInstantSearch() {
                 routing: window.routing
             },
         );
-
-        const search = instantsearch(instantsearchOptions);
-
-        search.client.addAlgoliaAgent(getAlgoliaAgent());
-
-        /** Prepare sorting indices data */
-        algoliaConfig.sortingIndices.unshift({
-            name: indexName,
-            label: algoliaConfig.translations.relevance,
-        });
 
         const currentRefinementsAttributes = getCurrentRefinementsAttributes();
 
@@ -392,154 +421,154 @@ function initAlgoliaInstantSearch() {
         }
 
 
-    /**
-     * Here are specified custom attributes widgets which require special code to run properly
-     * Custom widgets can be added to this object like [attribute]: function(facet, templates)
-     * Function must return an array [<widget name>: string, <widget options>: object]
-     **/
-    const customAttributeFacet = {
-        categories: function (facet, templates) {
-            const hierarchical_levels = [];
-            for (let l = 0; l < 10; l++) {
-                hierarchical_levels.push('categories.level' + l.toString());
-            }
+        /**
+         * Here are specified custom attributes widgets which require special code to run properly
+         * Custom widgets can be added to this object like [attribute]: function(facet, templates)
+         * Function must return an array [<widget name>: string, <widget options>: object]
+         **/
+        const customAttributeFacet = {
+            categories: function (facet, templates) {
+                const hierarchical_levels = [];
+                for (let l = 0; l < 10; l++) {
+                    hierarchical_levels.push('categories.level' + l.toString());
+                }
 
-            const hierarchicalMenuParams = {
-                container: facet.wrapper.appendChild(
-                    createISWidgetContainer(facet.attribute)
-                ),
-                attributes: hierarchical_levels,
-                separator: algoliaConfig.instant.categorySeparator,
-                templates: templates,
-                showParentLevel: true,
-                limit: algoliaConfig.maxValuesPerFacet,
-                sortBy: ['name:asc'],
-                transformItems(items) {
-                    return algoliaConfig.isCategoryPage
-                        ? items.map((item) => {
-                                return {
-                                    ...item,
-                                    categoryUrl: algoliaConfig.instant
-                                        .isCategoryNavigationEnabled
-                                        ? algoliaConfig.request.childCategories[item.value]['url']
-                                        : '',
-                                };
-                            }
-                        )
-                        : items;
-                },
-            };
+                const hierarchicalMenuParams = {
+                    container: facet.wrapper.appendChild(
+                        createISWidgetContainer(facet.attribute)
+                    ),
+                    attributes: hierarchical_levels,
+                    separator: algoliaConfig.instant.categorySeparator,
+                    templates: templates,
+                    showParentLevel: true,
+                    limit: algoliaConfig.maxValuesPerFacet,
+                    sortBy: ['name:asc'],
+                    transformItems(items) {
+                        return algoliaConfig.isCategoryPage
+                            ? items.map((item) => {
+                                    return {
+                                        ...item,
+                                        categoryUrl: algoliaConfig.instant
+                                            .isCategoryNavigationEnabled
+                                            ? algoliaConfig.request.childCategories[item.value]['url']
+                                            : '',
+                                    };
+                                }
+                            )
+                            : items;
+                    },
+                };
 
-            if (algoliaConfig.isCategoryPage) {
-                hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
-            }
+                if (algoliaConfig.isCategoryPage) {
+                    hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
+                }
 
-            hierarchicalMenuParams.templates.item =
-                '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="{{cssClasses.label}}">{{label}}</span>' +
-                ' ' +
-                '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
-                '</a>';
-            hierarchicalMenuParams.panelOptions = {
-                templates: {
-                    header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
-                },
-                hidden: function ({items}) {
-                    return !items.length;
-                },
-            };
+                hierarchicalMenuParams.templates.item =
+                    '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="{{cssClasses.label}}">{{label}}</span>' +
+                    ' ' +
+                    '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
+                    '</a>';
+                hierarchicalMenuParams.panelOptions = {
+                    templates: {
+                        header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
+                    },
+                    hidden: function ({items}) {
+                        return !items.length;
+                    },
+                };
 
-            return ['hierarchicalMenu', hierarchicalMenuParams];
-        },
-    };
-
-    /** Add all facet widgets to instantsearch object **/
-    let facetWrapper = document.getElementById('instant-search-facets-container');
-    for (let facetIndex in algoliaConfig.facets) {
-        let facet = algoliaConfig.facets[facetIndex];
-        if (facet.attribute.indexOf("price") !== -1)
-            facet.attribute = facet.attribute + algoliaConfig.priceKey;
-
-        facet.wrapper = facetWrapper;
-
-        const templates = {
-            item: document.getElementById('refinements-lists-item-template').innerHTML
+                return ['hierarchicalMenu', hierarchicalMenuParams];
+            },
         };
 
-        const widgetInfo = customAttributeFacet[facet.attribute] !== undefined
-            ? customAttributeFacet[facet.attribute](facet, templates)
-            : getFacetWidget(facet, templates);
+        /** Add all facet widgets to instantsearch object **/
+        let facetWrapper = document.getElementById('instant-search-facets-container');
+        for (let facetIndex in algoliaConfig.facets) {
+            let facet = algoliaConfig.facets[facetIndex];
+            if (facet.attribute.indexOf("price") !== -1)
+                facet.attribute = facet.attribute + algoliaConfig.priceKey;
 
-        const widgetType = widgetInfo[0],
-            widgetConfig = widgetInfo[1];
+            facet.wrapper = facetWrapper;
 
-        if (typeof allWidgetConfiguration[widgetType] === 'undefined') {
-            allWidgetConfiguration[widgetType] = [widgetConfig];
-        } else {
-            allWidgetConfiguration[widgetType].push(widgetConfig);
-        }
-    }
-
-
-    if (algoliaConfig.analytics.enabled) {
-        if (typeof algoliaAnalyticsPushFunction !== 'function') {
-            let algoliaAnalyticsPushFunction = function (
-                formattedParameters,
-                state,
-                results
-            ) {
-                const trackedUrl =
-                    '/catalogsearch/result/?q=' +
-                    state.query +
-                    '&' +
-                    formattedParameters +
-                    '&numberOfHits=' +
-                    results.nbHits;
-
-                // Universal Analytics
-                if (typeof window.ga !== 'undefined') {
-                    window.ga('set', 'page', trackedUrl);
-                    window.ga('send', 'pageView');
-                }
+            const templates = {
+                item: document.getElementById('refinements-lists-item-template').innerHTML
             };
+
+            const widgetInfo = customAttributeFacet[facet.attribute] !== undefined
+                ? customAttributeFacet[facet.attribute](facet, templates)
+                : getFacetWidget(facet, templates);
+
+            const widgetType = widgetInfo[0],
+                widgetConfig = widgetInfo[1];
+
+            if (typeof allWidgetConfiguration[widgetType] === 'undefined') {
+                allWidgetConfiguration[widgetType] = [widgetConfig];
+            } else {
+                allWidgetConfiguration[widgetType].push(widgetConfig);
+            }
+        }
+
+
+        if (algoliaConfig.analytics.enabled) {
+            if (typeof algoliaAnalyticsPushFunction !== 'function') {
+                let algoliaAnalyticsPushFunction = function (
+                    formattedParameters,
+                    state,
+                    results
+                ) {
+                    const trackedUrl =
+                        '/catalogsearch/result/?q=' +
+                        state.query +
+                        '&' +
+                        formattedParameters +
+                        '&numberOfHits=' +
+                        results.nbHits;
+
+                    // Universal Analytics
+                    if (typeof window.ga !== 'undefined') {
+                        window.ga('set', 'page', trackedUrl);
+                        window.ga('send', 'pageView');
+                    }
+                };
+
+                allWidgetConfiguration['analytics'] = {
+                    pushFunction: algoliaAnalyticsPushFunction,
+                };
+            }
 
             allWidgetConfiguration['analytics'] = {
-                pushFunction: algoliaAnalyticsPushFunction,
+                ...allWidgetConfiguration['analytics'],
+                delay: algoliaConfig.analytics.delay,
+                triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
+                pushInitialSearch: algoliaConfig.analytics.pushInitialSearch,
             };
         }
 
-        allWidgetConfiguration['analytics'] = {
-            ...allWidgetConfiguration['analytics'],
-            delay: algoliaConfig.analytics.delay,
-            triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
-            pushInitialSearch: algoliaConfig.analytics.pushInitialSearch,
-        };
-    }
+        allWidgetConfiguration = algolia.triggerHooks(
+            'beforeWidgetInitialization',
+            allWidgetConfiguration
+        );
 
-    allWidgetConfiguration = algolia.triggerHooks(
-        'beforeWidgetInitialization',
-        allWidgetConfiguration
-    );
-
-    for (let widgetType in allWidgetConfiguration) {
-        if (Array.isArray(allWidgetConfiguration[widgetType]) === true) {
-            for (let i in allWidgetConfiguration[widgetType]) {
-                addWidget(search, widgetType, allWidgetConfiguration[widgetType][i], instantsearch);
+        for (let widgetType in allWidgetConfiguration) {
+            if (Array.isArray(allWidgetConfiguration[widgetType]) === true) {
+                for (let i in allWidgetConfiguration[widgetType]) {
+                    addWidget(search, widgetType, allWidgetConfiguration[widgetType][i], instantsearch);
+                }
+            } else {
+                addWidget(search, widgetType, allWidgetConfiguration[widgetType], instantsearch);
             }
-        } else {
-            addWidget(search, widgetType, allWidgetConfiguration[widgetType], instantsearch);
         }
-    }
 
-    // Capture active redirect URL with IS facet params for add to cart from PLP
-    if (algoliaConfig.instant.isAddToCartEnabled) {
-        search.on('render', () => {
-            const cartForms = document.querySelectorAll('[data-role="tocart-form"]');
-            cartForms.forEach((form, i) => {
-                form.addEventListener('submit', (e) => {
-                    const url = `${algoliaConfig.request.url}${window.location.search}`;
-                    e.target.elements[
-                        algoliaConfig.instant.addToCartParams.redirectUrlParam
-                        ].value = window.AlgoliaBase64.mageEncode(url);
+        // Capture active redirect URL with IS facet params for add to cart from PLP
+        if (algoliaConfig.instant.isAddToCartEnabled) {
+            search.on('render', () => {
+                const cartForms = document.querySelectorAll('[data-role="tocart-form"]');
+                cartForms.forEach((form, i) => {
+                    form.addEventListener('submit', (e) => {
+                        const url = `${algoliaConfig.request.url}${window.location.search}`;
+                        e.target.elements[
+                            algoliaConfig.instant.addToCartParams.redirectUrlParam
+                            ].value = window.AlgoliaBase64.mageEncode(url);
                     });
                 });
             });
@@ -680,20 +709,20 @@ function initAlgoliaInstantSearch() {
             ruleContexts: getRuleContexts()
         };
 
-            if (
-                algoliaConfig.request.path.length &&
-                window.location.hash.indexOf('categories.level0') === -1
-            ) {
-                if (!algoliaConfig.areCategoriesInFacets) {
+        if (
+            algoliaConfig.request.path.length &&
+            window.location.hash.indexOf('categories.level0') === -1
+        ) {
+            if (!algoliaConfig.areCategoriesInFacets) {
                 searchParameters['facetsRefinements'] = {};
                 searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
             }
         }
 
         if (algoliaConfig.instant.isVisualMerchEnabled && algoliaConfig.isCategoryPage) {
-                searchParameters.filters = `${
-                    algoliaConfig.instant.categoryPageIdAttribute
-                }:"${algoliaConfig.request.path.replace(/"/g, '\\"')}"`;
+            searchParameters.filters = `${
+                algoliaConfig.instant.categoryPageIdAttribute
+            }:"${algoliaConfig.request.path.replace(/"/g, '\\"')}"`;
         }
 
         return searchParameters;
@@ -725,14 +754,13 @@ function initAlgoliaInstantSearch() {
 
             attributes.push({
                 name: name,
-                    label: facet.label ? facet.label : facet.attribute,
+                label: facet.label ? facet.label : facet.attribute,
             });
         });
 
         return attributes;
     }
 
-    let isStarted = false;
 
     function startInstantSearch(search) {
         if (isStarted === true) {
@@ -751,7 +779,7 @@ function initAlgoliaInstantSearch() {
         isStarted = true;
     }
 
-    function getFacetWidget (facet, templates) {
+    function getFacetWidget(facet, templates) {
         const panelOptions = {
             templates: {
                 header: '<div class="name">'
@@ -843,24 +871,23 @@ function initAlgoliaInstantSearch() {
 
             return ['rangeSlider',
                 {
-                container: facet.wrapper.appendChild(
-                    createISWidgetContainer(facet.attribute)
-                ),
-                attribute: facet.attribute,
-                templates: templates,
-                pips: false,
-                panelOptions: panelOptions,
-                tooltips: {
-                    format: function (formattedValue) {
-                        return facet.attribute.match(/price/) === null
-                            ? parseInt(formattedValue)
-                            : hyva.formatPrice(formattedValue);
+                    container: facet.wrapper.appendChild(
+                        createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute: facet.attribute,
+                    templates: templates,
+                    pips: false,
+                    panelOptions: panelOptions,
+                    tooltips: {
+                        format: function (formattedValue) {
+                            return facet.attribute.match(/price/) === null
+                                ? parseInt(formattedValue)
+                                : hyva.formatPrice(formattedValue);
+                        }
                     }
-                }
-            }];
+                }];
         }
     }
-
 
 
     function addWidget(search, type, config, instantsearch) {
@@ -917,7 +944,6 @@ function initAlgoliaInstantSearch() {
             }
         });
     }
-
 
 
     // Initialize the Algolia InstantSearch

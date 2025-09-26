@@ -54,7 +54,7 @@ $pageJsRegistry->setBlockNameDependency($block, 'search.result.list.js.compare')
                         <div>
                             <div>
                                 <div class="hidden">
-                                    <span><span><?php echo __('Rating') ?>:</span></span>
+                                    <span><span><?= $escaper->escapeHtml(__('Rating')) ?>:</span></span>
                                     <div title="{{rating_summary}}%">
                                             <span style="width:{{rating_summary}}%">
                                                 <span>{{rating_summary}}%</span>
@@ -62,33 +62,33 @@ $pageJsRegistry->setBlockNameDependency($block, 'search.result.list.js.compare')
                                     </div>
                                 </div>
                             </div>
-                            {{^<?php echo $maxVar; ?>}}
+                            {{^<?= $escaper->escapeHtml($maxVar); ?>}}
                             <div itemprop="offers" itemscope itemtype="http://schema.org/Offer" class="price">
-                                <meta itemprop="price" content="{{<?php echo $baseVar; ?>}}"/>
-                                {{/<?php echo $maxVar; ?>}}
-                                {{#<?php echo $maxVar; ?>}}
+                                <meta itemprop="price" content="{{<?= $escaper->escapeHtml($baseVar); ?>}}"/>
+                                {{/<?= $escaper->escapeHtml($maxVar); ?>}}
+                                {{#<?= $escaper->escapeHtml($maxVar); ?>}}
                                 <div itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer" class="price">
-                                    <meta itemprop="lowPrice" content="{{<?php echo $baseVar; ?>}}"/>
-                                    <meta itemprop="highPrice" content="{{<?php echo $maxVar; ?>}}"/>
-                                    {{/<?php echo $maxVar; ?>}}
-                                    <meta itemprop="priceCurrency" content="<?php echo $currencyCode; ?>"/>
+                                    <meta itemprop="lowPrice" content="{{<?= $escaper->escapeHtml($baseVar); ?>}}"/>
+                                    <meta itemprop="highPrice" content="{{<?= $escaper->escapeHtml($maxVar); ?>}}"/>
+                                    {{/<?= $escaper->escapeHtml($maxVar); ?>}}
+                                    <meta itemprop="priceCurrency" content="<?= $escaper->escapeHtml($currencyCode); ?>"/>
                                     <div>
                                         <div class="flex flex-col">
                                             <span class="text-lg font-semibold tracking-wider leading-7">
-                                                {{<?php echo $baseFormatedVar; ?>}}
+                                                {{<?= $escaper->escapeHtml($baseFormatedVar); ?>}}
                                             </span>
-                                            {{#<?php echo $origFormatedVar; ?>}}
+                                            {{#<?= $escaper->escapeHtml($origFormatedVar); ?>}}
                                             <div>
                                                 <span class="text-sm font-normal leading-6 text-gray-500"><?= $escaper->escapeHtmlAttr(__('Regular Price')) ?></span>
-                                                <span class="pl-1 text-base font-normal leading-6 text-gray-500"> {{<?php echo $origFormatedVar; ?>}}</span>
+                                                <span class="pl-1 text-base font-normal leading-6 text-gray-500"> {{<?= $escaper->escapeHtml($origFormatedVar); ?>}}</span>
                                             </div>
-                                            {{/<?php echo $origFormatedVar; ?>}}
-                                            {{#<?php echo $tierFormatedVar; ?>}}
+                                            {{/<?= $escaper->escapeHtml($origFormatedVar); ?>}}
+                                            {{#<?= $escaper->escapeHtml($tierFormatedVar); ?>}}
                                             <span>
-                                                    <?php echo __('As low as') ?>
-                                                    <span>{{<?php echo $tierFormatedVar; ?>}}</span>
+                                                    <?= $escaper->escapeHtml(__('As low as')) ?>
+                                                    <span>{{<?= $escaper->escapeHtml($tierFormatedVar); ?>}}</span>
                                                 </span>
-                                            {{/<?php echo $tierFormatedVar; ?>}}
+                                            {{/<?= $escaper->escapeHtml($tierFormatedVar); ?>}}
                                         </div>
                                     </div>
                                 </div>
@@ -102,11 +102,11 @@ $pageJsRegistry->setBlockNameDependency($block, 'search.result.list.js.compare')
                                 <input type="hidden" name="uenc" value="{{ addToCart.uenc }}">
                                 <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
                                 <button
-                                    type="submit" title="<?php echo __('Add to Cart') ?>"
+                                    type="submit" title="<?= $escaper->escapeHtml(__('Add to Cart')) ?>"
                                     class="w-auto btn btn-primary justify-center text-sm mr-auto"
                                 >
                                     <?= $heroiconsOutline->shoppingCartHtml("h-6 w-6 border-current inline", 25, 25) ?>
-                                    <span class="ml-2 inline md:ml-0 md:hidden lg:ml-2 lg:inline"><?php echo __('Add to Cart') ?></span>
+                                    <span class="ml-2 inline md:ml-0 md:hidden lg:ml-2 lg:inline"><?= $escaper->escapeHtml(__('Add to Cart')) ?></span>
                                 </button>
                             </form>
                             <button

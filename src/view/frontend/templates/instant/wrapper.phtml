@@ -15,7 +15,7 @@ $heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
     {{/findAutocomplete}}
 
     <div id="algolia_instant_selector"
-         class="w-full h-full px-6 mx-auto sm:max-w-screen-sm md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl 2xl:max-w-screen-2xl <?php echo $block->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
+         class="w-full h-full px-6 mx-auto sm:max-w-screen-sm md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl 2xl:max-w-screen-2xl <?= $escaper->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
         <div class="flex flex-col pt-4 md:flex-row">
             <div class="w-full px-2.5  md:w-2/5 md:px-0 lg:w-1/3 lg:pb-8 xl:pr-5" id="algolia-left-container">
                 <div class="px-4 mb-4 border md:px-0 md:border-none">
@@ -23,7 +23,7 @@ $heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
                         <div class="flex items-center justify-between" x-data="{open:false}">
                             <div class="relative w-8 h-8 bg-container-lighter rounded border border-container-darker cursor-pointer" @click="open = !open">
                                 <div class="absolute z-20 w-8 h-8 text-transparent text-center cursor-pointer leading-10 border-1 border-gray-200" id="refine-toggle">
-                                    + <?php echo $block->escapeHtml(__('Refine')); ?>
+                                    + <?= $escaper->escapeHtml(__('Refine')); ?>
                                 </div>
                                 <span class="absolute z-10 py-1 px-1">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="transition-transform transform duration-300 ease-in-out" :class="open ? 'rotate-180' : ''">
@@ -36,7 +36,7 @@ $heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
                     <div class="hidden-xs md:block pt-3 md:pt-0" id="instant-search-facets-container">
                         <div class="w-full flex flex-col px-8 py-4 bg-white shadow hidden-xs md:block">
                             <span class="text-base md:text-lg font-semibold hidden" id="instant-search-active-filters-label">
-                                <?php echo $block->escapeHtml(__('Active filtering')); ?>
+                                <?= $escaper->escapeHtml(__('Active filtering')); ?>
                             </span>
                             <div class="order-2" id="clear-refinements"></div>
                             <div id="current-refinements"></div>
@@ -63,13 +63,14 @@ $heroiconsSolid = $viewModels->require(HeroiconsSolid::class);
                                     <div class="basis-full flex items-center" id="algolia-stats"></div>
                                     <div class="pull-right basis-full flex justify-end items-center text-gray-400 text-sm leading-8 tracking-wider">
                                         <div class="hidden">
-                                            <?php echo $block->escapeHtml(__('SORT BY')); ?> &nbsp;
+                                            <?= $escaper->escapeHtml(__('SORT BY')); ?> &nbsp;
                                         </div>
                                         <div id="algolia-sorts"></div>
                                     </div>
                                 </div>
                             </div>
                             <div id="algolia-banner"></div>
+                            <div id="instant-redirect-container"></div>
                             <div id="instant-empty-results-container"></div>
                             <div class="py-6" id="instant-search-results-container"></div>
                         </div>
