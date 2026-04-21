@@ -425,12 +425,14 @@ function initAlgoliaInstantSearch() {
                     !algoliaConfig.request.categoryId &&
                     !algoliaConfig.request.landingPageId.length
                 ) {
-                    $('.page-title-wrapper span.base').html(
-                        algoliaConfig.translations.searchTitle +
-                        ": '" +
-                        window.algolia.htmlspecialcharsEncode(inputValue) +
-                        "'"
-                    );
+                    const el = document.querySelector('h1.page-title');
+                    if (el) {
+                        el.innerHTML =
+                            algoliaConfig.translations.searchTitle +
+                            ": '" +
+                            window.algolia.htmlspecialcharsEncode(inputValue) +
+                            "'";
+                    }
                 }
                 return search(inputValue);
             },
@@ -609,6 +611,7 @@ function initAlgoliaInstantSearch() {
                             ? parseInt(value)
                             : hyva.formatPrice(
                                 value,
+                                false,
                                 algoliaConfig.priceFormat
                             );
                     },
