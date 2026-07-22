@@ -162,7 +162,6 @@ class InstantSearchViewModel implements ArgumentInterface
                     $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/autocomplete/query-suggestions-plugin.min.js'),
                     $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/autocomplete/recent-searches-plugin.min.js'),
                     $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/autocomplete/redirect-url-plugin.min.js'),
-                    $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/autocomplete/query-suggestions-plugin.min.js'),
                     $this->getAssetUrl('Blackbird_HyvaAlgoliaSearch::js/autocomplete.js')
                 ],
                 $this->getAutocompleteTemplateScripts()

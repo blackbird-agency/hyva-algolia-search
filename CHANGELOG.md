@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [102.0.2] - 2026-07-22
+
+### Changed
+- Extended `algolia/algoliasearch-magento-2` version constraint to `~3.17.0 || ~3.18.0` for compatibility with v3.18.x
+- Removed duplicate `query-suggestions-plugin.min.js` entry in `getAutocompleteScripts()`
+
 ## [102.0.1] - 2026-04-21
 
 ### Fixed
