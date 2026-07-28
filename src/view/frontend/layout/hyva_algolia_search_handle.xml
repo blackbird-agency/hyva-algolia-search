@@ -19,6 +19,13 @@
             </action>
         </referenceBlock>
 
+        <!-- Place Algolia wrapper in content container (inside .columns) -->
+        <referenceContainer name="content">
+            <block class="Algolia\AlgoliaSearch\Block\Instant\Wrapper"
+                   name="algolia.instant.wrapper"
+                   template="Blackbird_HyvaAlgoliaSearch::instant/wrapper.phtml"/>
+        </referenceContainer>
+
         <referenceBlock name="before.body.end">
             <block name="algolia-search"
                    as="header-search"
@@ -40,14 +47,6 @@
                        template="Blackbird_HyvaAlgoliaSearch::hook/beforeWidgetInitialization.phtml"
                        class="Algolia\AlgoliaSearch\Block\Algolia" />
             </container>
-        </referenceBlock>
-
-        <referenceBlock name="algolia.instant.wrapper">
-            <action method="setTemplate">
-                <argument name="setTemplate" xsi:type="string">
-                    Blackbird_HyvaAlgoliaSearch::instant/wrapper.phtml
-                </argument>
-            </action>
         </referenceBlock>
         <referenceBlock name="algolia.instant.hit">
             <action method="setTemplate">
