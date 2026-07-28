@@ -10,7 +10,7 @@ Compat module for Algolia Search on Magento 2 using Hyvä Themes. This requires:
 
 ## Compatibility
 
-This module is only compatible with algoliasearch from version 3.17 onwards.
+This module is only compatible with algoliasearch from version 3.18 onwards.
 
 ## Setup
 
@@ -78,13 +78,8 @@ This compat modules offers full Hyvä-compatibility for the following Algolia se
 - Algolia Recommend
 - Algolia Autocomplete
 - Algolia Insights
+- Algolia Query Rules
+- Algolia Redirects
 
 Default styling is heavily inspired by the native theme of Hyvä Themes. Most style classes are used directly in the relevent templates or in the overridable `tailwind-source.css` file located in the `view/frontend/tailwind/` directory.
 Compare and wishlist feature has been reported.
-
-## Known issues, limitations
-
-- As of now, the Ajax add to basket feature has been implemented within a limited scope. Simple products have the quick ATB option but configurable products are **forwarded to the product page**.
-- The native Hyvä Themes implementation of the option selection on a product tile **has not** been integrated yet.
-- Filters styling on a listing page are quite raw at the moment. This will be improved in the future
-

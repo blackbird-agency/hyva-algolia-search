@@ -352,21 +352,18 @@ function initAlgoliaCommon() {
                         }
                         // Handle categories
                         if (currentFacet.attribute === 'categories' && !algoliaConfig.isCategoryPage) {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.hierarchicalMenu &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'] &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'].join('~'));
+                            routeParameters[algoliaConfig.routing.categoryParameter] =
+                                uiStateProductIndex.hierarchicalMenu?.[currentFacet.attribute + '.level0']?.join('~');
                         }
                         // Handle sliders
                         if (currentFacet.type === 'slider' || currentFacet.type === 'priceRanges') {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
-                                uiStateProductIndex.range[currentFacet.attribute] &&
-                                uiStateProductIndex.range[currentFacet.attribute]);
+                            routeParameters[currentFacet.attribute] = uiStateProductIndex?.range?.[currentFacet.attribute];
                         }
                     }
 
                 }
-                routeParameters['sortBy'] = uiStateProductIndex.sortBy;
-                routeParameters['page'] = uiStateProductIndex.page;
+                routeParameters[algoliaConfig.routing.sortingParameter] = uiStateProductIndex.sortBy;
+                routeParameters[algoliaConfig.routing.pagingParameter] = uiStateProductIndex.page;
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
@@ -399,7 +396,7 @@ function initAlgoliaCommon() {
                         }
                         // Handle categories facet
                         if (currentFacet.attribute === 'categories' && !algoliaConfig.isCategoryPage) {
-                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split('~');
+                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters[algoliaConfig.routing.categoryParameter]?.split(algoliaConfig.routing.categoryRouteDelimiter);
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
                                 'categories.level0' in landingPageConfig) {
@@ -411,8 +408,11 @@ function initAlgoliaCommon() {
                         }
                         // Handle sliders
                         if (currentFacet.type === 'slider' || currentFacet.type === 'priceRanges') {
-                            let currentFacetAttribute = currentFacet.attribute;
-                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
+                            const currentFacetAttribute = currentFacet.attribute;
+                            if (Object.hasOwn(Object.prototype, currentFacetAttribute)) {
+                                continue;
+                            }
+                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute];
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {
@@ -432,7 +432,7 @@ function initAlgoliaCommon() {
 
                 }
                 uiStateProductIndex['sortBy'] = routeParameters.sortBy;
-                uiStateProductIndex['page'] = routeParameters.page;
+                uiStateProductIndex['page'] = routeParameters[algoliaConfig.routing.pagingParameter];
 
                 let uiState = {};
                 uiState[productIndexName] = uiStateProductIndex;

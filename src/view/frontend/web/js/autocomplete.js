@@ -422,7 +422,7 @@ function initAlgoliaAutocomplete() {
 
         options.facets = ['categories.level0'];
         options.numericFilters = 'visibility_search=1';
-        options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
+        options.ruleContexts = [algoliaConfig.request.ruleContexts.facetFilters, '']; // Empty context to keep backward compatibility for already created rules in dashboard
 
         options = algolia.triggerHooks(
             'afterAutocompleteProductSourceOptions',
@@ -523,7 +523,7 @@ function initAlgoliaAutocomplete() {
     function buildAutocompletePlugins(searchClient) {
         const plugins = [];
 
-        if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
+        if (algoliaConfig.autocomplete.areSuggestionsEnabled) {
             state.hasSuggestionSection = true;
             plugins.push(buildSuggestionsPlugin(searchClient));
         }
@@ -790,14 +790,49 @@ function initAlgoliaAutocomplete() {
         return createRedirectUrlPlugin(params);
     }
 
+    function createSuggestionsSearchClient(searchClient, suggestionsIndexName) {
+        return {
+            ...searchClient,
+            search(requests) {
+                return searchClient.search(requests).catch((error) => {
+                    if (error.status === 404 && error.message.includes(suggestionsIndexName)) {
+                        console.warn(`[Algolia] Suggestions index "${suggestionsIndexName}" not found. Suggestions will be disabled.`);
+                        return {
+                            results: requests.map(() => ({
+                                hits: [], nbHits: 0, page: 0, nbPages: 0,
+                                hitsPerPage: 0, processingTimeMS: 0, query: '', params: ''
+                            }))
+                        };
+                    }
+                    throw error;
+                });
+            }
+        };
+    }
+
+    function getSuggestionsIndexName() {
+        return algoliaConfig.autocomplete.showAlgoliaSuggestions
+            ? algoliaConfig.autocomplete.suggestionsIndexName
+            : `${algoliaConfig.indexName}_suggestions`;
+    }
+
+    function getNumberOfSuggestions() {
+        return algoliaConfig.autocomplete.showAlgoliaSuggestions
+            ? algoliaConfig.autocomplete.nbOfAlgoliaSuggestions
+            : algoliaConfig.autocomplete.nbOfQueriesSuggestions;
+    }
+
     function buildSuggestionsPlugin(searchClient) {
+        const suggestionsIndexName = getSuggestionsIndexName();
+        const numberOfSuggestions = getNumberOfSuggestions();
+        const suggestionsSearchClient = createSuggestionsSearchClient(searchClient, suggestionsIndexName);
         return createQuerySuggestionsPlugin(
             {
-                searchClient,
-                indexName: `${algoliaConfig.indexName}_suggestions`,
+                searchClient: suggestionsSearchClient,
+                indexName: suggestionsIndexName,
                 getSearchParams() {
                     return {
-                        hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                        hitsPerPage: numberOfSuggestions,
                         clickAnalytics: true,
                     };
                 },
