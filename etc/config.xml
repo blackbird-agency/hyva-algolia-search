@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <algoliasearch_instant>
+            <instant>
+                <instant_selector>#algolia_instant_selector</instant_selector>
+            </instant>
+        </algoliasearch_instant>
+    </default>
+</config>

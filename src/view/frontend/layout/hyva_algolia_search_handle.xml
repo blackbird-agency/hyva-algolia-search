@@ -8,8 +8,11 @@
         <remove src="Algolia_AlgoliaSearch::css/recommend.css"/>
     </head>
     <body>
+        <!-- Remove core Magento catalog blocks (no backend rendering needed for Hyva frontend) -->
+        <referenceBlock name="catalog.leftnav" remove="true"/>
+        <referenceBlock name="category.products.list" remove="true"/>
+
         <referenceBlock name="algolia.internals.configuration" remove="true"/>
-        <!--        <referenceBlock name="algolia.beforecontent" remove="true"/>-->
         <referenceBlock name="header-search">
             <action method="setTemplate" ifconfig="algoliasearch_autocomplete/autocomplete/is_popup_enabled">
                 <argument name="setTemplate" xsi:type="string">Blackbird_HyvaAlgoliaSearch::html/header/search-form.phtml</argument>

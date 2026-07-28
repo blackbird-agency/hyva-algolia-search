@@ -3,10 +3,4 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Algolia\AlgoliaSearch\Block\Widget\TrendsItem" type="Blackbird\HyvaAlgoliaSearch\Block\Widget\TrendsItem"/>
     <preference for="Algolia\AlgoliaSearch\Block\Widget\LookingSimilar" type="Blackbird\HyvaAlgoliaSearch\Block\Widget\LookingSimilar"/>
-
-    <type name="Algolia\AlgoliaSearch\Observer\AddAlgoliaAssetsObserver">
-        <plugin name="hyva_algolia_add_assets_observer_plugin"
-                type="Blackbird\HyvaAlgoliaSearch\Plugin\Algolia\AddAlgoliaAssetsObserverPlugin"
-                sortOrder="10" />
-    </type>
 </config>
