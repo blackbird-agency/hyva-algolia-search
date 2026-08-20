@@ -84,6 +84,7 @@ class InstantSearchViewModel implements ArgumentInterface
             $this->getAssetUrl('Blackbird_HyvaAlgoliaSearch::js/internals/base64.js'),
             $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/algolia-instantsearch.min.js'),
             $this->getAssetUrl('Algolia_AlgoliaSearch::js/lib/search-insights.min.js'),
+            $this->getAssetUrl('Algolia_AlgoliaSearch/js/lib/algolia-search-helper.min.js')
         ];
     }
 
