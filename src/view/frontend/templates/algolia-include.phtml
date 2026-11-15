@@ -16,7 +16,7 @@ $catalogSearchHelper = $block->getCatalogSearchHelper();
 /** @var InstantSearchViewModel $viewModel */
 $viewModel = $viewModels->require(InstantSearchViewModel::class);
 ?>
-<?php if ($config->isDefaultSelector() && $config->isInstantEnabled()): ?>
+<?php if ($config->isDefaultSelector() && ($config->isInstantEnabled() || $config->isAutoCompleteEnabled())): ?>
     <?= $block->getChildHtml('insights-js') ?>
     <script>
         window.algoliaConfig = <?= /** @noEscape */ $viewModel->getJsConfig(); ?>;
